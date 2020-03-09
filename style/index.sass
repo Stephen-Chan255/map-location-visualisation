@@ -1,0 +1,97 @@
+@import "https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800,900&display=swap"
+@import 'https://fonts.googleapis.com/css?family=Rubik:200,300,400,500,600,700,900&display=swap'
+
+$header-height-mini: 40px
+$header-height-large: 50px
+
+@mixin row-center
+  display: flex
+  flex-direction: row
+  align-items: center
+    
+@mixin row-btw-center
+  @include row-center
+  justify-content: space-between
+
+@mixin row-center-center
+  @include row-center
+  justify-content: center
+
+@mixin column-center
+  display: flex
+  flex-direction: column
+  align-items: center
+
+@mixin grid
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr))
+  grid-gap: 30px
+
+@mixin section($header-height: $header-height-mini,$p: 20px, $h3-font-size: 1.25rem)
+    padding: $header-height + $p $p $p+10px
+    .content h3
+      font-size: $h3-font-size
+      
+  
+// ***** Global styles ***** 
+*
+  margin: 0
+  padding: 0
+  box-sizing: border-box
+
+body
+  // font-family: 'Poppins', sans-serif
+  font-family: "Rubik","Arial",sans-serif
+  font-size: 16px
+
+// ***** End of global styles ***** 
+.content
+  display: flex
+  flex-direction: column
+  align-items: center
+  height: 100vh
+  max-width: 400px
+  margin: 0 auto
+  padding: 30px 30px 0
+  
+  h3 
+    font-weight: 400
+    letter-spacing: 2px
+    color: #919191
+    padding-bottom: 10px
+    border-bottom: 4px solid #f6f6f6
+    text-transform: uppercase
+    margin-bottom: 30px
+  form 
+    width: 100%
+    input
+      padding-bottom: 10px
+      font-size: 1rem
+      font-weight: 300
+      width: 100%
+      margin-bottom: 20px
+      border: none
+      border-bottom: solid 1px black
+    .text-btn-row
+      display: flex
+      flex-direction: row
+      justify-content: space-between
+      border-radius: 1000px
+      font-weight: 400
+      max-width: 400px
+      input
+        color: #4b6cc1
+        text-decoration: underline
+        background: none
+        border-bottom: none
+        width: auto
+    input[type=submit]
+      border-radius: 1000px
+      background: #4b6cc1
+      color: white
+      font-size: 1rem
+      padding: 10px 0
+      margin-bottom: 0
+      border: none
+
+
