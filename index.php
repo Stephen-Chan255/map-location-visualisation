@@ -1,177 +1,90 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <title>Places Search Box</title>
-    <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
-      #map {
-        height: 100%;
-      }
-      /* Optional: Makes the sample page fill the window. */
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      #description {
-        font-family: Roboto;
-        font-size: 15px;
-        font-weight: 300;
-      }
+</head>
 
-      #infowindow-content .title {
-        font-weight: bold;
-      }
+<body>
+<div class="container my-5">
+    <h3 class="text-center">Address processor</h3>
+    <form action="map.php" method="POST">
+        <div class="form-group row">
+            <label class="col-sm-2 form-control-label text-right my-auto">Address</label>
+            <div class="col-sm-10" id="addr">
+                <input type="text" id="pac-input_0" name="addr[]" placeholder="Input Address" class="form-control">
+            </div>
+        </div>
 
-      #infowindow-content {
-        display: none;
-      }
+        <div class="form-group row">
+            <div class="col-sm-10 offset-sm-2">
+                <input type="button" class="btn btn-secondary" onclick="addInput()" value="Add more">
+                <input type="button" class="btn btn-secondary" onclick="removeInput()" value="Remove last one">
+                <input type="submit" class="btn btn-primary" value="Submit">
+            </div>
+        </div>
+    </form>
+</div>
 
-      #map #infowindow-content {
-        display: inline;
-      }
+<!--Load the API from the specified URL
+* The async attribute: allows the browser to render the page while the API loads
+* The callback parameter executes the initMap() function
+-->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4wXyYFhTs8ds_Ppa4jWL3HQEhWRu_Yao&libraries=places&callback=initAutocomplete"
+         async defer>
+</script>
 
-      .pac-card {
-        margin: 10px 10px 0 0;
-        border-radius: 2px 0 0 2px;
-        box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        outline: none;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-        background-color: #fff;
-        font-family: Roboto;
-      }
+<script>
+    var index = 0;
 
-      #pac-container {
-        padding-bottom: 12px;
-        margin-right: 12px;
-      }
-
-      .pac-controls {
-        display: inline-block;
-        padding: 5px 11px;
-      }
-
-      .pac-controls label {
-        font-family: Roboto;
-        font-size: 13px;
-        font-weight: 300;
-      }
-
-      #pac-input {
-        background-color: #fff;
-        font-family: Roboto;
-        font-size: 15px;
-        font-weight: 300;
-        margin-left: 12px;
-        padding: 0 11px 0 13px;
-        text-overflow: ellipsis;
-        width: 400px;
-      }
-
-      #pac-input:focus {
-        border-color: #4d90fe;
-      }
-
-      #title {
-        color: #fff;
-        background-color: #4d90fe;
-        font-size: 25px;
-        font-weight: 500;
-        padding: 6px 12px;
-      }
-      #target {
-        width: 345px;
-      }
-    </style>
-  </head>
-  
-  <body>
-   <div id="map"></div>
- 
-    <?php
-    $locations = $_POST["addr"]; // $locations is an array
-
-    foreach ($locations as $location) {
-        
-        // construct the url for geocoding request
-        $output_format = "json";
-        $location = str_replace(' ', '+', $location);        
-        $params = "address=$location&key=AIzaSyD4wXyYFhTs8ds_Ppa4jWL3HQEhWRu_Yao";
-        $url = "https://maps.googleapis.com/maps/api/geocode/$output_format?$params";
-
-        // get the json obj from the url 
-        $json = file_get_contents($url);
-        // echo $json . '<br>';
-
-        // parse the json into an assoc array (2nd param: assoc = true)
-        $json = json_decode($json, true);
-        // print_r($json);
-
-        $location_cord = $json['results'][0]["geometry"]['location'];
-        $lat = $location_cord['lat'];
-        $lng = $location_cord['lng'];
-        $cords[$location] = ["lat" => $lat, "lng" =>$lng];
+    function addInput() {
+        $(document).ready(function(){
+            index++;
+            var newInput = '<input id=\"pac-input_' + index + '\" type=\"text\" placeholder=\"Input Address\" name=\"addr[]\" class=\"form-control mt-3\">\n'
+            $("#addr").append(newInput);
+            initAutocomplete();
+        });  
     }
 
-    // print_r($cords);
+    function removeInput() {
+        $(document).ready(function(){
+            var address = $("#addr");
+            if (address.children().length > 1) {
+                address.children("input:last").remove();
+            }
+            index--;
+            initAutocomplete();
+        });
+    }
 
-    // encode back to pass to js
-    $json = json_encode($cords);
-    // echo $json;
-
-    echo "<script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyD4wXyYFhTs8ds_Ppa4jWL3HQEhWRu_Yao&callback=initMap'
-    async defer></script>
-
-      <script type='text/javascript'> 
-        function initMap() {
-
-          // 1. init the map centered at Uluru
-          // (https://developers.google.com/maps/documentation/javascript/adding-a-google-map)
-          var uluru = {lat: -25.344, lng: 131.036};
-          var map = new google.maps.Map(document.getElementById('map'), {zoom: 4, center: uluru});
-
-          // 2. put markers on the map
-          
-          // set ordered labels
-          // (https://developers.google.com/maps/documentation/javascript/markers)
-          var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-          var labelIndex = 0;
-
-          // extra latLng from json
-          console.log('json');    
-          console.log($json);
-
-          var positions = [];
-          for (var obj in ".$json.") {
-            var position = {lat: ".$json."[obj]['lat'], lng: ".$json."[obj]['lng']};
-            console.log('position')    
-            console.log(position);
-            
-            // put the marker on the map with ordered label
-            var marker = new google.maps.Marker({
-                map: map,
-                position: position,
-                label: labels[labelIndex++ % labels.length],
-            });
-            positions.push(position);
-          } 
-          
-          // 3. draw the polyline between multiple positions
-          // (https://developers-dot-devsite-v2-prod.appspot.com/maps/documentation/javascript/examples/polyline-simple)
-          var path = new google.maps.Polyline({
-            path: positions,
-            geodesic: true,
-            strokeColor: '#FF0000',
-            strokeOpacity: 1.0,
-            strokeWeight: 2
-          });
-          path.setMap(map);
+    function initAutocomplete() {
+        console.log(index);
+        for (var i = 0; i <= index; i++) {
+            console.log('pac-input_'+ i);
+            var input = document.getElementById('pac-input_'+ i);
+            new google.maps.places.SearchBox(input);
         }
-        </script>";
-    ?>
-  </body>
+    }
+</script>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous">
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous">
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous">
+</script>
+</body>
 </html>
